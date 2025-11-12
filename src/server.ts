@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import postRoutes from './routes/postRoutes';
@@ -14,7 +14,27 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Middlewares
-app.use(cors());
+// Configuração do CORS
+const allowedOrigins = [
+  'http://localhost:3000', // Para desenvolvimento local do Frontend
+  'https://simplifikapost.com.br', // Domínio de produção do Frontend
+  // Adicione outros domínios de produção/staging aqui
+];
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // Permite requisições sem 'origin' (como apps mobile ou curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  credentials: true, // Permite cookies e headers de autorização
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
